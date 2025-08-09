@@ -1,0 +1,41 @@
+data_dir: data
+models_dir: models
+required_columns:
+  - __id__
+  - userId
+  - userName
+  - age
+  - country
+  - language
+  - aboutMe
+  - sex
+  - seeking
+  - relationshipGoals
+  - subscribed
+  - subscribedEliteOne
+  - subscribedEliteThree
+  - subscribedEliteSix
+  - subscribedEliteTwelve
+categorical_columns:
+  - country
+  - language
+  - sex
+  - seeking
+  - relationshipGoals
+tfidf_params:
+  max_features: 50
+  stop_words: english
+  min_df: 2
+keywords:
+  - love
+  - soul mate
+  - relationship
+  - partner
+  - soccer
+  - football
+model_params:
+  hidden_dims: [64, 32]
+training_params:
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 10
