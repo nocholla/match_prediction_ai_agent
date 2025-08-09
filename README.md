@@ -61,15 +61,29 @@ An intelligent matchmaking system that combines **rule-based filtering**, **mach
 ## 📁 **Project Structure**
 
 ```
-matchmaking_ai_agent/
+match_prediction_ai_agent/
+├── .github/
+│   └── workflows/
+│       ├── pylint.yml
+│       ├── tests-anaconda.yml
+│       ├── deploy-azure.yml
 ├── data/
 │   ├── Profiles.csv
 │   ├── LikedUsers.csv
-│   ├── ...
+│   ├── MatchedUsers.csv
+│   ├── BlockedUsers.csv
+│   ├── DeclinedUsers.csv
+│   ├── DeletedUsers.csv
+│   ├── ReportedUsers.csv
 ├── models/
-│   ├── matchmaking_model.pkl
-│   ├── ...
+│   ├── pytorch_model.pth
+│   ├── scaler.pkl
+│   ├── label_encoders.pkl
+│   ├── tfidf_vectorizer.pkl
+│   ├── user_to_idx.pkl
+│   ├── profile_to_idx.pkl
 ├── src/
+│   ├── __init__.py
 │   ├── data_loader.py
 │   ├── preprocessing.py
 │   ├── recommender.py
@@ -81,11 +95,15 @@ matchmaking_ai_agent/
 ├── tests/
 │   ├── test_data_loader.py
 │   ├── test_agent.py
-│   ├── ...
+│   ├── test_recommender.py
+│   ├── test_utils.py
 ├── config.yaml
 ├── requirements.txt
+├── README.md
 ├── run.py
-└── README.md
+├── LICENSE
+├── CONTRIBUTING.md
+├── Dockerfile
 ```
 
 ---
