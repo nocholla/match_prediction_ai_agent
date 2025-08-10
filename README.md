@@ -323,11 +323,21 @@ pytest -v
 pytest tests/test_agent.py -v
 ```
 
+<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/443e32ae-5d98-4698-802f-188b7b7a9700" />
+
+<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/73d49f98-e7fd-4f34-8b5a-e5c9faf6b423" />
+
+<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/2f752da3-cb75-4119-ba0a-72df201dbae4" />
+
+<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/e6eba357-ec5b-43cf-9c68-b2423ce4e7f5" />
+
 ---
 
 ## 📷 **Screenshots**
 
-**Streamlit Interface:** <img src="https://github.com/user-attachments/assets/70f418f0-a9ce-44e4-95d4-f8adc414e77e" width="800" />
+<img width="1710" height="621" alt="image" src="https://github.com/user-attachments/assets/474c4c4f-6ae2-4fe1-af6a-92bd61f82efd" />
+
+<img width="1710" height="532" alt="image" src="https://github.com/user-attachments/assets/5e2c1d6b-4720-421f-9805-2b48e57f5318" />
 
 ---
 
