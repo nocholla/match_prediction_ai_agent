@@ -54,7 +54,7 @@ def validate_input(user_id, age, sex, seeking, country, language, relationship_g
     return True
 
 def main():
-    st.title("Africa Love Match - Matchmaking AI Agent 🤖")
+    st.title("👫 Match Prediction AI Agent")
     st.markdown("""
     Enter a user ID or profile details to get high-compatibility profile suggestions.
     Compatible with Africa Soccer Kings via soccer-related keywords.

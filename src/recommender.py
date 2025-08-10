@@ -53,9 +53,15 @@ def load_model_and_scaler(models_dir, model_file="pytorch_model.pth", scaler_fil
     scaler_path = os.path.join(models_dir, scaler_file)
     if os.path.exists(model_path) and os.path.exists(scaler_path):
         logger.info("Loading existing PyTorch model and scaler")
-        model = torch.load(model_path)
-        scaler = joblib.load(scaler_path)
-        return model, scaler
+        try:
+            # Allow CompatibilityModel to be deserialized safely
+            torch.serialization.add_safe_globals([CompatibilityModel])
+            model = torch.load(model_path, weights_only=False)
+            scaler = joblib.load(scaler_path)
+            return model, scaler
+        except Exception as e:
+            logger.error(f"Error loading model or scaler: {e}")
+            return None, None
     return None, None
 
 def train_model(interaction_matrix, X_features):
