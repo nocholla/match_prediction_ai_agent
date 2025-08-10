@@ -1,6 +1,6 @@
 # 👫 **Match Prediction AI Agent**
 
-An intelligent matchmaking system that combines **rule-based filtering**, **machine learning**, and **text analysis** to recommend the most compatible profiles. Optimized for **soccer enthusiasts** with special boosts for users via **Africa Soccer Kings** compatibility scoring.
+An intelligent matchmaking system that combines **rule-based filtering**, **machine learning (scikit-learn)**, and a **PyTorch neural network** for compatibility prediction. Optimized for **soccer enthusiasts** with special boosts for users via **Africa Soccer Kings** compatibility scoring.
 
 ---
 
@@ -11,49 +11,61 @@ An intelligent matchmaking system that combines **rule-based filtering**, **mach
 3. [Project Structure](#-project-structure)
 4. [Installation](#-installation)
 5. [Usage](#-usage)
-6. [Testing](#-testing)
-7. [Screenshots](#-screenshots)
-8. [Contributing](#-contributing)
-9. [License](#-license)
+6. [Machine Learning Workflow](#-machine-learning-workflow)
+7. [PyTorch Neural Model](#-pytorch-neural-model)
+8. [Testing](#-testing)
+9. [Screenshots](#-screenshots)
+10. [Contributing](#-contributing)
+11. [License](#-license)
 
 ---
 
 ## ✨ **Features**
 
-* 📝 **User Profile Input** — Enter **age**, **sex**, **seeking preference**, **country**, **language**, **relationship goals**, and a personal bio.
+* 📝 **User Profile Input** — Age, sex, seeking preference, country, language, relationship goals, and bio.
+
 * 🛡 **Rule-Based Filtering** — Matches based on:
 
   * Sex & preference alignment
   * Age range ±5 years
-  * Excludes blocked, declined, deleted, or reported users
-* 📊 **Machine Learning Predictions** — Compatibility scoring via **Gradient Boosting Regressor** with **TF-IDF** bio vectorization.
-* ⚽ **Soccer Enthusiast Boost** — Increases scores for users mentioning “soccer” or “football” in their bio.
-* ⚡ **Performance Optimization** — Streamlit’s `@st.cache_resource` speeds up data load and model training.
-* 💾 **Model Persistence** — Saves:
+  * Exclusion of blocked, declined, deleted, or reported users
+
+* 📊 **Machine Learning Predictions**:
+
+  * **Scikit-learn GradientBoostingRegressor** for initial scoring
+  * **TF-IDF bio vectorization** for text-based features
+  * **PyTorch neural network** (`CompatibilityModel`) for deep compatibility learning
+
+* ⚽ **Soccer Enthusiast Boost** — Extra scoring for “soccer” or “football” mentions in bios.
+
+* 💾 **Model Persistence**:
 
   ```
   matchmaking_model.pkl
   tfidf_vectorizer.pkl
   label_encoders.pkl
   scaler.pkl
+  pytorch_model.pth
   ```
-* 📈 **Recommendation Output** — Stores top matches in `data/recommendations.csv` with reasons.
+
+* 📈 **Recommendation Output** — Top matches saved in `data/recommendations.csv` with detailed scoring.
 
 ---
 
 ## 🛠 **Tech Stack**
 
 * **Language:** 🐍 Python 3.13
+
 * **Web Framework:** 🌐 Streamlit
+
 * **Machine Learning:**
 
   * `scikit-learn` — GradientBoostingRegressor, StandardScaler, LabelEncoder, TfidfVectorizer
-  * `pandas` — Data handling
-  * `numpy` — Numerical operations
-  * `scipy` — Sparse matrix support
-* **Data Storage:** CSV
-* **Serialization:** `joblib`
+  * **PyTorch** — Custom neural network for advanced scoring
+  * `pandas`, `numpy`, `scipy`, `joblib`
+
 * **Testing:** `pytest`
+
 * **Config:** YAML (`config.yaml`)
 
 ---
@@ -111,15 +123,10 @@ match_prediction_ai_agent/
 ## 📦 **Installation**
 
 ```bash
-# Clone repository
-git clone https://github.com/<your-username>/matchmaking_ai_agent.git
-cd matchmaking_ai_agent
-
-# Create virtual environment
+git clone https://github.com/<your-username>/match_prediction_ai_agent.git
+cd match_prediction_ai_agent
 python3.13 -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -127,21 +134,185 @@ pip install -r requirements.txt
 
 ## ▶ **Usage**
 
-**Run via Streamlit UI:**
+### **Streamlit UI**
 
 ```bash
 streamlit run ui/streamlit_app.py
 ```
 
-Open `http://localhost:8501` and fill in profile details.
-
-**Run via CLI:**
+### **CLI Mode**
 
 ```bash
 python run.py --user_id user123 --age 25 --sex Male --seeking Female --country Kenya --language Swahili --relationship_goals "Long-term" --about_me "Love football and travel"
 ```
 
-**Output:** Recommendations saved in `data/recommendations.csv`.
+**Output:** `data/recommendations.csv`
+
+---
+
+## 🤖 **Machine Learning Workflow**
+
+1. **Load Data & Preprocess**
+
+   * Encode categorical variables
+   * Vectorize bios using TF-IDF
+
+2. **Initial Model (Scikit-learn)**
+
+   * Train GradientBoostingRegressor
+   * Store results in `ml_score`
+
+3. **Deep Learning Model (PyTorch)**
+
+   * `CompatibilityModel` uses user–profile interaction features + TF-IDF vectors
+   * Trains with MSE loss and Adam optimizer
+   * Supports incremental training & loading from `pytorch_model.pth`
+
+4. **Final Score**
+
+   * Weighted blend:
+
+     ```
+     final_score = ml_score * 0.7
+                  + country_match * 0.1
+                  + language_match * 0.1
+                  + goal_match * 0.1
+     ```
+
+---
+
+## 🔥 **PyTorch Neural Model**
+
+The **`CompatibilityModel`** is a custom PyTorch feed-forward neural network used for deep compatibility scoring.
+It works alongside the scikit-learn pipeline to improve prediction accuracy.
+
+---
+
+### **Model Definition**
+
+```python
+import torch
+import torch.nn as nn
+
+class CompatibilityModel(nn.Module):
+    """PyTorch neural network for compatibility prediction."""
+    def __init__(self, input_dim, hidden_dims):
+        super(CompatibilityModel, self).__init__()
+        layers = []
+        prev_dim = input_dim
+        for dim in hidden_dims:
+            layers.extend([
+                nn.Linear(prev_dim, dim),
+                nn.ReLU(),
+                nn.Dropout(0.2)
+            ])
+            prev_dim = dim
+        layers.append(nn.Linear(prev_dim, 1))  # Final output layer
+        self.network = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.network(x)
+```
+
+---
+
+### **Loading a Pretrained Model**
+
+```python
+import os
+import joblib
+import torch
+
+from src.agent import CompatibilityModel  # Adjust import to your structure
+
+def load_model_and_scaler(models_dir):
+    model_path = os.path.join(models_dir, "pytorch_model.pth")
+    scaler_path = os.path.join(models_dir, "scaler.pkl")
+
+    if os.path.exists(model_path) and os.path.exists(scaler_path):
+        model = torch.load(model_path, weights_only=False)
+        scaler = joblib.load(scaler_path)
+        return model, scaler
+    else:
+        raise FileNotFoundError("Model or scaler not found.")
+
+# Example
+model, scaler = load_model_and_scaler("models/")
+```
+
+---
+
+### **Training the Model**
+
+```python
+from torch.utils.data import DataLoader, Dataset
+import torch.optim as optim
+from sklearn.preprocessing import StandardScaler
+import numpy as np
+
+class CompatibilityDataset(Dataset):
+    """Dataset for compatibility prediction."""
+    def __init__(self, X, y):
+        self.X = torch.tensor(X, dtype=torch.float32)
+        self.y = torch.tensor(y, dtype=torch.float32)
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.y[idx]
+
+def train_model(X_train, y_train, hidden_dims=[128, 64], lr=0.001, epochs=10, batch_size=32):
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X_train)
+
+    dataset = CompatibilityDataset(X_scaled, y_train)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    input_dim = X_scaled.shape[1]
+    model = CompatibilityModel(input_dim, hidden_dims)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.MSELoss()
+
+    model.train()
+    for epoch in range(epochs):
+        total_loss = 0
+        for batch_X, batch_y in dataloader:
+            optimizer.zero_grad()
+            outputs = model(batch_X).squeeze()
+            loss = criterion(outputs, batch_y)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(dataloader):.4f}")
+
+    return model, scaler
+
+# Train and save
+model, scaler = train_model(X_train, y_train)
+torch.save(model, "models/pytorch_model.pth")
+joblib.dump(scaler, "models/scaler.pkl")
+```
+
+---
+
+### **Making Predictions**
+
+```python
+def predict_compatibility(model, scaler, X_features):
+    X_scaled = scaler.transform(X_features)
+    X_tensor = torch.tensor(X_scaled, dtype=torch.float32)
+
+    model.eval()
+    with torch.no_grad():
+        scores = model(X_tensor).squeeze().numpy()
+
+    return scores
+
+# Example usage
+predicted_scores = predict_compatibility(model, scaler, X_test)
+print(predicted_scores)
+```
 
 ---
 
@@ -149,47 +320,27 @@ python run.py --user_id user123 --age 25 --sex Male --seeking Female --country K
 
 ```bash
 pytest -v
-```
-
-Run a specific test:
-
-```bash
 pytest tests/test_agent.py -v
 ```
-
-<img width="1728" height="1026" alt="Test Agent" src="https://github.com/user-attachments/assets/765e2fc8-c052-47ec-8ff1-42a4ea510c3e" />
-
-<img width="1728" height="1026" alt="Test Data Loader" src="https://github.com/user-attachments/assets/2a6c7d3a-a7b0-4106-bd7f-16a608d3b1df" />
-
-<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/6dd533bf-ffd3-428d-95d6-54d4cdfbd7af" />
-
-<img width="3456" height="2052" alt="image" src="https://github.com/user-attachments/assets/e2d37a7b-4d66-4660-9eff-90d2ea0fd808" />
 
 ---
 
 ## 📷 **Screenshots**
 
-**Main Interface:** <img src="https://github.com/user-attachments/assets/53fc99ac-b3be-4b9a-a3c8-97e7fd5f1e41" width="800"/>
-
-**Recommendations:** <img src="https://github.com/user-attachments/assets/7b80bfd4-2678-46d9-8317-4d45bd89681e" width="800"/>
+**Streamlit Interface:** <img src="https://github.com/user-attachments/assets/70f418f0-a9ce-44e4-95d4-f8adc414e77e" width="800" />
 
 ---
 
 ## 🤝 **Contributing**
 
-1. Fork repo
-2. Create branch `feature/YourFeature`
-3. Commit changes
-4. Push and open PR
-
-Please ensure **all tests pass** before PR submission.
+1. Fork & branch (`feature/YourFeature`)
+2. Make changes, commit, and push
+3. Submit PR (ensure all tests pass)
 
 ---
 
 ## 📜 **License**
 
-MIT License — See [LICENSE](LICENSE) file.
+MIT License — See [LICENSE](LICENSE)
 
 ---
-
-
